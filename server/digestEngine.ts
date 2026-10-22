@@ -164,30 +164,46 @@ export async function sendDigestEmail(cleanEmail: string, quotes: any[], frequen
 
   const fullHtml = buildDigestHtml(quotes, frequency, subject, dateStr);
 
-  const apiKey = process.env.RESEND_API_KEY || '';
+  const apiKey = (process.env.RESEND_API_KEY || '').trim();
   if (!apiKey) {
     return {
       success: false,
       missingApiKey: true,
-      message: 'RESEND_API_KEY is not configured in environment variables.',
+      error: 'RESEND_API_KEY is not configured in Netlify or server environment variables.',
+      message: 'RESEND_API_KEY is not configured in Netlify or server environment variables.',
       previewCount: count,
       subject,
     };
   }
 
-  const resendClient = new Resend(apiKey);
-  const { data, error } = await resendClient.emails.send({
-    from: fromEmail,
-    to: [cleanEmail],
-    subject,
-    html: fullHtml,
-  });
+  try {
+    const resendClient = new Resend(apiKey);
+    const { data, error } = await resendClient.emails.send({
+      from: fromEmail,
+      to: [cleanEmail],
+      subject,
+      html: fullHtml,
+    });
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      console.error('[Resend Error]', error);
+      return {
+        success: false,
+        error: error.message || 'Resend API returned an error',
+        statusCode: (error as any).statusCode,
+        missingApiKey: false,
+      };
+    }
+
+    return { success: true, messageId: data?.id, bookCount: count, subject };
+  } catch (err: any) {
+    console.error('[Resend Exception]', err);
+    return {
+      success: false,
+      error: err.message || 'Delivery error',
+      missingApiKey: false,
+    };
   }
-
-  return { success: true, messageId: data?.id, bookCount: count, subject };
 }
 
 export async function runAutomatedDigestCycle(): Promise<{ sentCount: number; errors: string[] }> {

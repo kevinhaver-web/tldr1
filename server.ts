@@ -151,7 +151,7 @@ app.post('/api/send-digest', async (req, res) => {
 
   try {
     const result = await sendDigestEmail(cleanEmail, quotes, frequency);
-    res.json(result);
+    res.status(result.success ? 200 : 400).json(result);
   } catch (err: any) {
     console.error('Unexpected email sending failure:', err);
     res.status(500).json({ success: false, error: err.message || 'Delivery error' });

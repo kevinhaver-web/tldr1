@@ -401,17 +401,41 @@ export default function App() {
           quotes: quotesToSend,
         }),
       });
-      const data = await res.json();
-      if (data.success) {
+
+      const contentType = res.headers.get('content-type') || '';
+      let data: any = null;
+      if (contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(
+          res.status === 404
+            ? 'Endpoint /api/send-digest not found (404). Please ensure netlify.toml & functions are deployed.'
+            : `Server returned HTTP ${res.status}: ${text.slice(0, 100)}`
+        );
+      }
+
+      if (data?.success) {
         setTestStatusMessage(
           `✓ Sent 1 email with ${quotesToSend.length} ${quotesToSend.length === 1 ? 'reading' : 'readings'} to ${subscription.email}`
         );
-      } else if (data.missingApiKey) {
+      } else if (data?.missingApiKey) {
         setTestStatusMessage(
-          `✓ Note: Add RESEND_API_KEY in Netlify (Site configuration > Environment variables) or .env, then redeploy.`
+          `✓ Note: Add RESEND_API_KEY in Netlify (Site configuration > Environment variables) & redeploy site.`
         );
       } else {
-        setTestStatusMessage(`Notice: ${data.error || 'Failed to dispatch'}`);
+        const errMsg = String(data?.error || data?.message || '');
+        if (errMsg.includes('only send testing emails to your own email address')) {
+          setTestStatusMessage(
+            `Resend note: On the free test domain, Resend only delivers to your account owner email (${subscription.email}). Verify a custom domain in Resend to send to other addresses.`
+          );
+        } else if (errMsg) {
+          setTestStatusMessage(`Notice: ${errMsg}`);
+        } else {
+          setTestStatusMessage(
+            `Notice: Failed to dispatch. Please check that RESEND_API_KEY is added in Netlify Environment Variables.`
+          );
+        }
       }
     } catch (err: any) {
       setTestStatusMessage(`Error: ${err.message || 'Network request failed'}`);
@@ -419,7 +443,7 @@ export default function App() {
       setIsSendingTest(false);
       setTimeout(() => {
         setTestStatusMessage((prev) => (prev?.startsWith('Sending') ? null : prev));
-      }, 7000);
+      }, 9000);
     }
   };
 

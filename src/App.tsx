@@ -239,13 +239,17 @@ export default function App() {
         setTestStatusMessage(
           `✓ Subscribed! Today's digest dispatched to ${clean}. Tomorrow & following days arrive daily at 9:00 AM.`
         );
+      } else if (data.error && data.error.includes('RESEND_API_KEY')) {
+        setTestStatusMessage(
+          `✓ Subscribed! Note: Add RESEND_API_KEY in Netlify (Site configuration > Environment variables) to send live emails.`
+        );
       } else {
         setTestStatusMessage(
           `✓ Digest updated. Delivers ${frequency} at 9:00 AM.`
         );
       }
-    } catch {
-      setTestStatusMessage('✓ Saved preferences.');
+    } catch (err: any) {
+      setTestStatusMessage(`✓ Saved preferences.`);
     }
 
     setTimeout(() => {
@@ -404,10 +408,10 @@ export default function App() {
         );
       } else if (data.missingApiKey) {
         setTestStatusMessage(
-          `✓ Combined digest ready (${quotesToSend.length} books in 1 email). Add RESEND_API_KEY in .env to deliver live.`
+          `✓ Note: Add RESEND_API_KEY in Netlify (Site configuration > Environment variables) or .env, then redeploy.`
         );
       } else {
-        setTestStatusMessage(`Resend response: ${data.error || 'Failed to dispatch'}`);
+        setTestStatusMessage(`Notice: ${data.error || 'Failed to dispatch'}`);
       }
     } catch (err: any) {
       setTestStatusMessage(`Error: ${err.message || 'Network request failed'}`);

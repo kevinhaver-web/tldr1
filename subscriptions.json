@@ -1,0 +1,15 @@
+[
+  {
+    "email": "kevin.haver@deptagency.com",
+    "frequency": "daily",
+    "bookIds": [
+      "how-not-to-plan",
+      "for-the-culture",
+      "feral-strategy"
+    ],
+    "timezone": "America/New_York",
+    "sendHour": 9,
+    "updatedAt": "2026-10-22T09:30:00.000Z",
+    "lastSentDate": "2026-10-22"
+  }
+]

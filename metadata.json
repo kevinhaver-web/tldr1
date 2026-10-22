@@ -1,0 +1,6 @@
+{
+  "name": "Too Long Didn't Read",
+  "description": "A daily dispatch of core ideas, quotes, and concise breakdowns from essential strategy books, curated by Kevin Haver.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
